@@ -122,7 +122,11 @@ void callback(char* topic, byte* payload, unsigned int length)
   if(device == "setPWM")
   {
     pwmVal = cmd.toInt();             // convert ASCII to integer
+    if(pwmVal > 255) pwmVal = 255;    // set limit
+    pwmVal = 255 - pwmVal;            // convert for hardware active low
     snprintf(txBuffer, 256, "Set PWM value: %lu\r\n", pwmVal);
+    Serial.print(txBuffer);
+    snprintf(txBuffer, 256, "Brightness: %d%%\r\n", (uint16_t)(pwmVal*100/255));
     Serial.print(txBuffer);
     ledcWrite(PWM1_Ch, pwmVal);        // set PWM value
   }
