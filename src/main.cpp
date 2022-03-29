@@ -27,8 +27,9 @@ int count = 0;
 char lstatus[4];
 bool status = 0;    // LED is OFF
 
-uint32_t pwmVal = 0;          // PWM duty cycle value
-uint16_t brightnessValue = 0; //  brightness value [0 - 100] %
+uint32_t dcValue = PWM_RES_VAL;         // duty cycle value default: turn off LED
+uint32_t pwmVal = 0;                    // PWM duty cycle value
+uint16_t brightnessValue = 0;           //  brightness value [0 - 100] %
 char txBuffer[256];
 
 // Prototype functions
@@ -145,7 +146,7 @@ void callback(char* topic, byte* payload, unsigned int length)
     Serial.print(txBuffer);
     snprintf(txBuffer, 256, "Set PWM value: %lu\r\n", pwmVal);
     Serial.print(txBuffer);
-    ledcWrite(PWM1_Ch, pwmVal);        // set PWM value
+    // ledcWrite(PWM1_Ch, pwmVal);        // set PWM value
     Serial.println("----------------------------------------------------");
     Serial.println();
   }
@@ -203,6 +204,7 @@ void setup() {
 
   digitalWrite(LED, LOW);                     // Turn off LED
 
+  ledcWrite(PWM1_Ch, dcValue);                // Turn off LED
 }
 
 // Infinity loop
@@ -226,6 +228,20 @@ void loop() {
     Serial.print(" -t ");
     Serial.println(outTopic);
     client.publish(outTopic, msg); // publish topic : ceilingLight/demo
+  }
+
+  if(pwmVal > dcValue)
+  {
+    dcValue++;
+    ledcWrite(PWM1_Ch, dcValue);        // set duty cycle value [0-255]
+    delay(10);
+  }
+
+  if(pwmVal < dcValue)
+  {
+    dcValue--;
+    ledcWrite(PWM1_Ch, dcValue);        // set duty cycle value [0-255]
+    delay(10);
   }
 
 }
