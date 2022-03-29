@@ -4,6 +4,11 @@
 
 #include <secret.h>
 
+#define PWM_Pin   25
+#define PWM1_Ch    0      // [0 - 15]
+#define PWM1_Res   8
+#define PWM1_Freq  1000
+
 //const int BUILTIN_LED = 2;
 const int LED = 2;
 
@@ -153,13 +158,15 @@ void reconnect()
 // Setup function
 void setup() {
   // put your setup code here, to run once:
-  pinMode(LED, OUTPUT);
-  Serial.begin(115200);
+  pinMode(LED, OUTPUT);                       // Built-in LED GPIO2
+  ledcAttachPin(PWM_Pin, PWM1_Ch);            // PWM pin, PWM channel
+  ledcSetup(PWM1_Ch, PWM1_Freq, PWM1_Res);    // PWM channel, PWM frequency, PWM resolution
+  Serial.begin(115200);                       // Baudrate config 115200, n, 1
   setup_wifi();         // WiFi setup
   client.setServer(mqtt_server, mqtt_port);   // MQTT setup
   client.setCallback(callback);               // Set MQTT callback
 
-  digitalWrite(LED, LOW);   // Turn off LED
+  digitalWrite(LED, LOW);                     // Turn off LED
 
 }
 
@@ -185,6 +192,9 @@ void loop() {
     Serial.println(outTopic);
     client.publish(outTopic, msg); // publish topic : ceilingLight/demo
   }
+
+  ledcWrite(PWM1_Ch, 127);        // 127, 8bits = 50% duty cycle
+
 }
 
 // MQTT publish response function
@@ -203,7 +213,7 @@ void pub_response(unsigned int state)
   Serial.print(msg);
   Serial.print(" -t ");
   Serial.println(outTopic);
-  client.publish(outTopic, msg); // publish topic : B2IoT/sn0001
+  client.publish(outTopic, msg); // publish topic : ceilingLight/demo
 }
 
 
