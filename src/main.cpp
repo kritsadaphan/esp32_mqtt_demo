@@ -27,6 +27,9 @@ int count = 0;
 char lstatus[4];
 bool status = 0;    // LED is OFF
 
+uint32_t pwmVal = 0;    // PWM duty cycle value
+char txBuffer[256];
+
 // Prototype functions
 void pub_response(unsigned int state);
 String getValue(byte* data, unsigned int length, char separator, int index);
@@ -114,6 +117,15 @@ void callback(char* topic, byte* payload, unsigned int length)
     Serial.println("----------------------------------------------------");
     Serial.println();
   }
+
+  // Demo set PWM value
+  if(device == "setPWM")
+  {
+    pwmVal = cmd.toInt();             // convert ASCII to integer
+    snprintf(txBuffer, 256, "Set PWM value: %lu\r\n", pwmVal);
+    Serial.print(txBuffer);
+    ledcWrite(PWM1_Ch, pwmVal);        // set PWM value
+  }
 }
 
 // MQTT reconnect function
@@ -192,8 +204,6 @@ void loop() {
     Serial.println(outTopic);
     client.publish(outTopic, msg); // publish topic : ceilingLight/demo
   }
-
-  ledcWrite(PWM1_Ch, 127);        // 127, 8bits = 50% duty cycle
 
 }
 
