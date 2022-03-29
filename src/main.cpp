@@ -4,11 +4,11 @@
 
 #include <secret.h>
 
-#define PWM_Pin   25
-#define PWM1_Ch    0      // [0 - 15]
-#define PWM1_Res   8
-#define PWM1_Freq  1000
-
+#define PWM_Pin     25
+#define PWM1_Ch     0      // [0 - 15]
+#define PWM1_Res    8
+#define PWM1_Freq   1000
+#define PWM_RES_VAL 255     // 8 Bits max = 2^8 - 1
 //const int BUILTIN_LED = 2;
 const int LED = 2;
 
@@ -27,7 +27,8 @@ int count = 0;
 char lstatus[4];
 bool status = 0;    // LED is OFF
 
-uint32_t pwmVal = 0;    // PWM duty cycle value
+uint32_t pwmVal = 0;          // PWM duty cycle value
+uint16_t brightnessValue = 0; //  brightness value [0 - 100] %
 char txBuffer[256];
 
 // Prototype functions
@@ -121,14 +122,32 @@ void callback(char* topic, byte* payload, unsigned int length)
   // Demo set PWM value
   if(device == "setPWM")
   {
-    pwmVal = cmd.toInt();             // convert ASCII to integer
-    if(pwmVal > 255) pwmVal = 255;    // set limit
-    pwmVal = 255 - pwmVal;            // convert for hardware active low
+    pwmVal = cmd.toInt();                             // convert ASCII to integer
+    if(pwmVal > PWM_RES_VAL) pwmVal = PWM_RES_VAL;    // set limit
+    pwmVal = PWM_RES_VAL - pwmVal;                    // convert for hardware active low
     snprintf(txBuffer, 256, "Set PWM value: %lu\r\n", pwmVal);
     Serial.print(txBuffer);
-    snprintf(txBuffer, 256, "Brightness: %d%%\r\n", (uint16_t)(pwmVal*100/255));
+    snprintf(txBuffer, 256, "Brightness: %d%%\r\n", (uint16_t)(pwmVal*100/PWM_RES_VAL));
     Serial.print(txBuffer);
     ledcWrite(PWM1_Ch, pwmVal);        // set PWM value
+    Serial.println("----------------------------------------------------");
+    Serial.println();
+  }
+
+  // Demo set Brightness
+  if(device == "setBrightness")
+  {
+    brightnessValue = cmd.toInt();
+    if(brightnessValue > 100) brightnessValue = 100;  // limit 100%
+    pwmVal = brightnessValue * PWM_RES_VAL / 100;
+    pwmVal = PWM_RES_VAL - pwmVal;
+    snprintf(txBuffer, 256, "Brightness: %d%%\r\n", brightnessValue);
+    Serial.print(txBuffer);
+    snprintf(txBuffer, 256, "Set PWM value: %lu\r\n", pwmVal);
+    Serial.print(txBuffer);
+    ledcWrite(PWM1_Ch, pwmVal);        // set PWM value
+    Serial.println("----------------------------------------------------");
+    Serial.println();
   }
 }
 
