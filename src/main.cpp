@@ -5,7 +5,7 @@
 #include <secret.h>
 
 //const int BUILTIN_LED = 2;
-const int LED = GPIO_NUM_1;
+const int LED = 2;
 
 // Publish topic and Subscribe topic
 const char* outTopic = "ceilingLight/demo";       // Publish topic
@@ -73,6 +73,10 @@ void callback(char* topic, byte* payload, unsigned int length)
     payload_in += (char)payload[i];
   }
   //Serial.println(payload_in);
+
+  // topic: ceilingLight/cmd
+  // payload: switch/ON       -> LED turn ON
+  //          switch/OFF      -> LED turn OFF
 
   // split with '/'
   int idx1, idx2;                                           // index to string
