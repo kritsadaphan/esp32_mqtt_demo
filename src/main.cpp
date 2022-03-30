@@ -27,7 +27,7 @@ int count = 0;
 char lstatus[4];
 bool status = 0;    // LED is OFF
 
-uint32_t dcValue = PWM_RES_VAL;         // duty cycle value default: turn off LED
+uint32_t dcValue = 0;                   // duty cycle value default: turn off LED
 uint32_t pwmVal = 0;                    // PWM duty cycle value
 uint16_t brightnessValue = 0;           //  brightness value [0 - 100] %
 char txBuffer[256];
@@ -141,7 +141,7 @@ void callback(char* topic, byte* payload, unsigned int length)
     brightnessValue = cmd.toInt();
     if(brightnessValue > 100) brightnessValue = 100;  // limit 100%
     pwmVal = brightnessValue * PWM_RES_VAL / 100;
-    pwmVal = PWM_RES_VAL - pwmVal;
+    // pwmVal = PWM_RES_VAL - pwmVal;
     snprintf(txBuffer, 256, "Brightness: %d%%\r\n", brightnessValue);
     Serial.print(txBuffer);
     snprintf(txBuffer, 256, "Set PWM value: %lu\r\n", pwmVal);
